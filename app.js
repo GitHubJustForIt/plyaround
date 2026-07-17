@@ -9,7 +9,8 @@
    ========================================================================= */
 
 const CONFIG = {
-  base: "https://cloud-capsule-hub.lovable.app/api/public/v1/9aa9a024-2cc1-4394-b5bc-d93d341a5dad",
+  // Wir hängen den öffentlichen Proxy vor deine Lovable-URL
+  base: "https://cors-anywhere.herokuapp.com/https://cloud-capsule-hub.lovable.app/api/public/v1/9aa9a024-2cc1-4394-b5bc-d93d341a5dad",
   token: "sk_d554bb50ee2036d413f019e4458de27a72ce7851d51b7a97"
 };
 
