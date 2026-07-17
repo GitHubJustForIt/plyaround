@@ -1,44 +1,34 @@
 /* =========================================================================
-   PODVERSE — app.js
-   Backend: cloud-capsule-hub key/value store (GET/POST/PUT/DELETE by key)
-   No listing endpoint exists on that API, so we keep two "index" documents
-   (idx_users, idx_projects) that hold summaries, and store the heavy
-   payloads (actual code, per-project presence, webrtc signaling) under
-   their own keys. Last-write-wins — fine for a hobby-scale demo, not for
-   heavy concurrent writers.
+   PODVERSE — app.js (LOKALE VERSION VIA LOCALSTORAGE)
    ========================================================================= */
 
+// CONFIG wird für die lokale Version nicht mehr zwingend benötigt, 
+// wir lassen es als Dummy da, falls andere Stellen darauf verweisen.
 const CONFIG = {
-  // Wir hängen den öffentlichen Proxy vor deine Lovable-URL
-  base: "https://cors-anywhere.herokuapp.com/https://cloud-capsule-hub.lovable.app/api/public/v1/9aa9a024-2cc1-4394-b5bc-d93d341a5dad",
-  token: "sk_d554bb50ee2036d413f019e4458de27a72ce7851d51b7a97"
+  base: "local",
+  token: "local"
 };
 
 /* ---------------------------------------------------------------------- */
-/* KV client                                                              */
+/* KV client (Simuliert via LocalStorage)                                 */
 /* ---------------------------------------------------------------------- */
 const KV = {
-  async _req(method, key, body) {
-    const opts = {
-      method,
-      headers: { "Authorization": `Bearer ${CONFIG.token}` }
-    };
-    if (body !== undefined) {
-      opts.headers["Content-Type"] = "application/json";
-      opts.body = JSON.stringify(body);
-    }
-    const res = await fetch(`${CONFIG.base}/${encodeURIComponent(key)}`, opts);
-    if (res.status === 404) return null;
-    if (!res.ok) throw new Error(`KV ${method} ${key} failed: ${res.status}`);
-    if (method === "DELETE") return true;
-    const text = await res.text();
-    if (!text) return null;
-    try { return JSON.parse(text); } catch { return text; }
+  async get(key) {
+    const data = localStorage.getItem(`pv_kv_${key}`);
+    if (data === null) return null; // 404 Simulator
+    try { return JSON.parse(data); } catch { return data; }
   },
-  get(key) { return this._req("GET", key); },
-  put(key, val) { return this._req("PUT", key, val); },
-  post(key, val) { return this._req("POST", key, val); },
-  del(key) { return this._req("DELETE", key); }
+  async put(key, val) {
+    localStorage.setItem(`pv_kv_${key}`, JSON.stringify(val));
+    return val;
+  },
+  async post(key, val) {
+    return this.put(key, val);
+  },
+  async del(key) {
+    localStorage.removeItem(`pv_kv_${key}`);
+    return true;
+  }
 };
 
 /* ---------------------------------------------------------------------- */
@@ -76,6 +66,7 @@ const Util = {
   },
   toast(msg) {
     const t = document.getElementById("toast");
+    if(!t) return alert(msg); // Fallback
     t.textContent = msg;
     t.classList.add("show");
     clearTimeout(t._timer);
