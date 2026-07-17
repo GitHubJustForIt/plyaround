@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Podverse — Build. Play. Connect.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ===================== TOP BAR ===================== -->
+<header class="topbar">
+  <div class="topbar__inner">
+    <a class="brand" href="#" onclick="UI.goHome();return false;">
+      <span class="brand__pod"></span>
+      <span class="brand__name">Podverse</span>
+    </a>
+
+    <div class="searchbar">
+      <input id="searchInput" type="text" placeholder="Pods durchsuchen … #tag, Name oder Ersteller" autocomplete="off">
+      <span class="searchbar__icon">⌕</span>
+    </div>
+
+    <div class="topbar__right">
+      <div class="live-counter" title="Menschen gerade online in Podverse">
+        <span class="live-dot"></span>
+        <span id="globalLiveCount">–</span> online
+      </div>
+      <button class="btn btn--ghost" id="createBtn">+ Erstellen</button>
+      <div id="accountSlot"></div>
+    </div>
+  </div>
+</header>
+
+<!-- ===================== MAIN ===================== -->
+<main id="mainView">
+
+  <section class="hero">
+    <div class="hero__text">
+      <p class="eyebrow">Dein Universum aus kleinen Welten</p>
+      <h1>Jeder Pod ist eine Welt. Jede Welt ist deine.</h1>
+      <p class="hero__sub">Lade HTML/CSS/JS oder Python-Pods hoch, spiel sie solo oder ruf Freunde per Session-Code live über P2P dazu — ganz ohne eigenen Server.</p>
+    </div>
+    <div class="hero__signature" id="heroSignature" aria-hidden="true"></div>
+  </section>
+
+  <section class="row">
+    <div class="row__head">
+      <h2>🔥 Top Pods</h2>
+      <span class="row__hint">Meistgespielt &amp; favorisiert</span>
+    </div>
+    <div class="grid" id="topGrid"></div>
+  </section>
+
+  <section class="row">
+    <div class="row__head">
+      <h2>✦ Für dich</h2>
+      <span class="row__hint">Passt zu deinem Geschmack</span>
+    </div>
+    <div class="grid" id="forYouGrid"></div>
+  </section>
+
+  <section class="row" id="searchRow" hidden>
+    <div class="row__head">
+      <h2>Suchergebnisse</h2>
+      <span class="row__hint" id="searchHint"></span>
+    </div>
+    <div class="grid" id="searchGrid"></div>
+  </section>
+
+</main>
+
+<!-- ===================== AUTH MODAL ===================== -->
+<div class="overlay" id="authOverlay" hidden>
+  <div class="modal modal--narrow">
+    <button class="modal__close" data-close="authOverlay">✕</button>
+    <div class="tabs">
+      <button class="tab is-active" data-tab="login">Anmelden</button>
+      <button class="tab" data-tab="register">Konto erstellen</button>
+      <button class="tab" data-tab="qr">QR-Login</button>
+    </div>
+
+    <form class="tab-panel is-active" data-panel="login" id="loginForm">
+      <label>Benutzername
+        <input required id="loginUser" autocomplete="username">
+      </label>
+      <label>Passwort
+        <input required id="loginPass" type="password" autocomplete="current-password">
+      </label>
+      <p class="form-error" id="loginError"></p>
+      <button class="btn btn--primary" type="submit">Einloggen</button>
+    </form>
+
+    <form class="tab-panel" data-panel="register" id="registerForm">
+      <label>Benutzername
+        <input required id="regUser" minlength="3" maxlength="20">
+      </label>
+      <label>Passwort
+        <input required id="regPass" type="password" minlength="4">
+      </label>
+      <p class="form-error" id="regError"></p>
+      <button class="btn btn--primary" type="submit">Konto erstellen</button>
+    </form>
+
+    <div class="tab-panel" data-panel="qr" id="qrPanel">
+      <p class="muted">Melde dich auf einem anderen Gerät an, indem du diesen Code dort einträgst.</p>
+      <div id="qrLoginArea" class="qr-area">Melde dich zuerst normal an, um deinen QR-Login-Code zu sehen.</div>
+      <label>Login-Code eingeben
+        <input id="qrCodeInput" placeholder="z.B. 7F3K-9QRT">
+      </label>
+      <p class="form-error" id="qrError"></p>
+      <button class="btn btn--primary" type="button" id="qrLoginBtn">Mit Code einloggen</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== CREATE / EDIT MODAL ===================== -->
+<div class="overlay" id="createOverlay" hidden>
+  <div class="modal modal--wide">
+    <button class="modal__close" data-close="createOverlay">✕</button>
+    <h2 id="createTitle">Neuen Pod erstellen</h2>
+
+    <div class="create-grid">
+      <div class="create-left">
+        <label>Name
+          <input id="cName" maxlength="40" placeholder="z.B. Sky Dash">
+        </label>
+        <label>Beschreibung
+          <textarea id="cDesc" maxlength="280" rows="3" placeholder="Worum geht's in deinem Pod?"></textarea>
+        </label>
+        <div class="hashtag-row">
+          <label>#1 <input class="tag-input" maxlength="16" placeholder="arcade"></label>
+          <label>#2 <input class="tag-input" maxlength="16" placeholder="2d"></label>
+          <label>#3 <input class="tag-input" maxlength="16" placeholder="multiplayer"></label>
+          <label>#4 <input class="tag-input" maxlength="16" placeholder="chill"></label>
+        </div>
+        <label class="toggle-row">
+          <input type="checkbox" id="cMultiplayer">
+          <span>Multiplayer (P2P) für diesen Pod erlauben</span>
+        </label>
+        <p class="muted small">Wenn aktiviert, können Spieler Sessions hosten und über einen Code beitreten. Dein Pod-Code erhält automatisch die Multiplayer-Bridge (<code>window.Podverse.multiplayer</code>).</p>
+      </div>
+
+      <div class="create-right">
+        <div class="lang-tabs">
+          <button class="langtab is-active" data-lang="html">HTML</button>
+          <button class="langtab" data-lang="css">CSS</button>
+          <button class="langtab" data-lang="js">JavaScript</button>
+          <button class="langtab" data-lang="py">Python</button>
+        </div>
+        <textarea id="codeEditor" class="code-editor" spellcheck="false" placeholder="&lt;!-- HTML hier einfügen --&gt;"></textarea>
+        <p class="muted small">Nur Code einfügen — kein Datei-Upload nötig. Python läuft im Browser via Pyodide (etwas langsamer beim Start).</p>
+      </div>
+    </div>
+
+    <p class="form-error" id="createError"></p>
+    <div class="create-actions">
+      <button class="btn btn--danger" id="deleteProjectBtn" hidden>Pod löschen</button>
+      <button class="btn btn--primary" id="publishBtn">Veröffentlichen</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== PROJECT DETAIL MODAL ===================== -->
+<div class="overlay" id="detailOverlay" hidden>
+  <div class="modal modal--narrow" id="detailModal">
+    <button class="modal__close" data-close="detailOverlay">✕</button>
+    <!-- filled by JS -->
+  </div>
+</div>
+
+<!-- ===================== MULTIPLAYER SETUP MODAL ===================== -->
+<div class="overlay" id="mpOverlay" hidden>
+  <div class="modal modal--narrow" id="mpModal">
+    <button class="modal__close" data-close="mpOverlay">✕</button>
+    <!-- filled by JS -->
+  </div>
+</div>
+
+<!-- ===================== PLAY VIEW ===================== -->
+<div class="playview" id="playView" hidden>
+  <div class="playview__bar">
+    <button class="btn btn--ghost" id="exitPlayBtn">← Verlassen</button>
+    <span id="playTitle" class="playview__title"></span>
+    <span class="live-counter" id="playLiveCounter"><span class="live-dot"></span> <span id="playLiveCount">–</span></span>
+    <span id="mpStatus" class="mp-status"></span>
+  </div>
+  <iframe id="playFrame" class="playview__frame" sandbox="allow-scripts allow-forms allow-modals allow-pointer-lock" allow="autoplay"></iframe>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
